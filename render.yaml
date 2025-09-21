@@ -1,0 +1,30 @@
+services:
+  # Backend service
+  - type: web
+    name: index-comparison-api
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+
+  # Frontend service
+  - type: web
+    name: index-comparison-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://index-comparison-api.onrender.com/api/:splat
+      - type: rewrite
+        source: /*
+        destination: /index.html
