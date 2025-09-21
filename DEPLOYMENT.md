@@ -7,7 +7,7 @@ This document outlines the steps to deploy this application on Render and explai
 This project consists of:
 - A React frontend built with Vite
 - An Express.js backend API
-- SQLite databases for data storage
+- PostgreSQL database for data storage
 
 ## Deploying to Render
 
@@ -21,10 +21,15 @@ This project consists of:
    - Connect your Git repository
    - Render will automatically detect the `render.yaml` file and create the services
 
-3. **Upload database files**:
-   - After services are created, go to the backend service (index-comparison-api)
-   - Navigate to the "Disks" tab
-   - Upload your `database.db` and `final.db` files to the `/data` directory
+3. **Migrate data to PostgreSQL**:
+   - After services are created, Render will automatically provision a PostgreSQL database
+   - Run the migration script to transfer data from SQLite to PostgreSQL:
+     ```bash
+     node migrate-to-postgres.js
+     ```
+     node migrate-to-postgres.js
+     ```
+   - This script will create the necessary tables and transfer all data from your SQLite databases
 
 4. **Verify deployment**:
    - Check that both services are running

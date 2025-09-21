@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const path = require('path');
 const yahooFinance = require('yahoo-finance2').default;
 
@@ -21,27 +21,22 @@ app.use((req, res, next) => {
   next();
 });
 
-// Database paths
-const DB_PATH = process.env.NODE_ENV === 'production' ? '/data' : '.';
-const indexDBPath = `${DB_PATH}/database.db`;
-const returnsDBPath = `${DB_PATH}/final.db`;
-
-// Database connections
-const indexDB = new sqlite3.Database(indexDBPath, sqlite3.OPEN_READONLY, (err) => {
-  if (err) {
-    console.error(`Error opening index database at ${indexDBPath}:`, err.message);
-  } else {
-    console.log(`Connected to the index database at ${indexDBPath}.`);
-  }
+// PostgreSQL connection
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({
+  connectionString,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-const returnsDB = new sqlite3.Database(returnsDBPath, sqlite3.OPEN_READONLY, (err) => {
-  if (err) {
-    console.error(`Error opening returns database at ${returnsDBPath}:`, err.message);
-  } else {
-    console.log(`Connected to the returns database at ${returnsDBPath}.`);
-  }
-});
+// Test database connection
+pool.connect()
+  .then(client => {
+    console.log('Connected to PostgreSQL database');
+    client.release();
+  })
+  .catch(err => {
+    console.error('Error connecting to PostgreSQL database:', err);
+  });
 
 // Helper function to parse percentage string to number
 function parsePercentage(percentStr) {
@@ -84,26 +79,33 @@ const INDEX_SYMBOLS = {
 // API Endpoints
 
 // Get all available indices
-app.get('/api/indices', (req, res) => {
-  indexDB.all("PRAGMA table_info(Sheet1)", [], (err, columns) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+app.get('/api/indices', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'sheet1' AND column_name != 'date'");
+    client.release();
     
-    const indices = columns
-      .map(col => col.name)
-      .filter(name => name !== 'Date');
-    
+    const indices = result.rows.map(row => row.column_name);
     res.json({ indices });
-  });
+  } catch (err) {
+    console.error('Error fetching indices:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Alias for /api/indices for backward compatibility
-app.get('/api/allindices', (req, res) => {
-  indexDB.all("PRAGMA table_info(Sheet1)", [], (err, columns) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+app.get('/api/allindices', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'sheet1' AND column_name != 'date'");
+    client.release();
+    
+    const indices = result.rows.map(row => row.column_name);
+    res.json({ indices });
+  } catch (err) {
+    console.error('Error fetching indices:', err);
+    res.status(500).json({ error: err.message });
+  }
     
     const indices = columns
       .map(col => col.name)

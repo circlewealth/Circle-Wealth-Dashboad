@@ -1,4 +1,11 @@
 services:
+  # PostgreSQL database
+  - type: pserv
+    name: index-comparison-db
+    plan: free
+    env: postgres
+    ipAllowList: []
+    
   # Backend service
   - type: web
     name: index-comparison-api
@@ -10,10 +17,11 @@ services:
         value: production
       - key: PORT
         value: 3001
-    disk:
-      name: data
-      mountPath: /data
-      sizeGB: 1
+      - key: DATABASE_URL
+        fromService:
+          type: pserv
+          name: index-comparison-db
+          property: connectionString
 
   # Frontend service
   - type: web

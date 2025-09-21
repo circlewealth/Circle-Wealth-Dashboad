@@ -7,10 +7,21 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+.venv
 dist
 dist-ssr
 *.local
+
+# Database files (will be migrated to PostgreSQL)
+*.db
+*.sqlite
+*.sqlite3
+
+# Excel and CSV files (data processing artifacts)
+*.xlsx
+*.csv
 
 # Editor directories and files
 .vscode/*
