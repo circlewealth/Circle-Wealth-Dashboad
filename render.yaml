@@ -1,10 +1,8 @@
 services:
   # PostgreSQL database
-  - type: pserv
+  - type: postgres
     name: index-comparison-db
     plan: free
-    env: postgres
-    ipAllowList: []
     
   # Backend service
   - type: web
@@ -19,8 +17,8 @@ services:
         value: 3001
       - key: DATABASE_URL
         fromService:
-          type: pserv
           name: index-comparison-db
+          type: postgres
           property: connectionString
 
   # Frontend service
