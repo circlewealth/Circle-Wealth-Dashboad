@@ -32,7 +32,7 @@ services:
     routes:
       - type: rewrite
         source: /api/*
-        destination: https://$${{ services.index-comparison-api.url }}/api/:splat
+        destination: https://${services.index-comparison-api.url}/api/:splat
       - type: rewrite
         source: /*
         destination: /index.html
