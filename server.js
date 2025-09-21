@@ -106,13 +106,6 @@ app.get('/api/allindices', async (req, res) => {
     console.error('Error fetching indices:', err);
     res.status(500).json({ error: err.message });
   }
-    
-    const indices = columns
-      .map(col => col.name)
-      .filter(name => name !== 'Date');
-    
-    res.json({ indices });
-  });
 });
 
 // Get historical data for a specific index
